@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BrightMind Teacher v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1a73e8;--blue2:#1967d2;--bg-blue:#e8f0fe;--bg:#f1f3f4;--text:#202124;--grey:#5f6368;--border:#dadce0;--green:#0f9d58;--red:#d93025;--orange:#e37400;--purple:#7b1fa2;--sh:0 1px 2px rgba(60,64,67,.3),0 1px 3px 1px rgba(60,64,67,.15);--sh2:0 1px 3px rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)}
+html,body{height:100%;overflow:hidden;font-family:'Roboto',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+button,input,select,textarea{font-family:inherit}
+
+/* ── TOP BAR ── */
+.topbar{height:64px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.ham{width:40px;height:40px;border:none;background:transparent;border-radius:50%;cursor:pointer;font-size:1.3rem;color:var(--grey)}
+.ham:hover{background:var(--bg)}
+.brand{font-size:1rem;font-weight:500;color:var(--text)}.brand em{color:var(--blue);font-style:normal}
+.room-chip{background:var(--bg-blue);color:var(--blue);border:none;border-radius:20px;padding:5px 14px;font-size:.8rem;font-weight:700;cursor:pointer;letter-spacing:1px}
+.room-chip:hover{background:#d2e3fc}
+.tb-btn{width:38px;height:38px;border-radius:50%;background:transparent;border:none;cursor:pointer;color:var(--grey);font-size:1rem;display:flex;align-items:center;justify-content:center}
+.tb-btn:hover{background:var(--bg)}
+.av{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700}
+
+/* ── LAYOUT ── */
+.layout{display:flex;height:calc(100vh - 64px);overflow:hidden}
+.sidebar{width:256px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width .2s}
+.sidebar.collapsed{width:0}
+.sb-inner{width:256px;overflow-y:auto;flex:1;padding:8px 0}
+.sb-sec{padding:4px 8px;font-size:.72rem;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.7px;margin:12px 0 4px}
+.sb-room{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:0 20px 20px 0;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;margin-right:8px;transition:background .15s}
+.sb-room:hover{background:var(--bg)}.sb-room.on{background:var(--bg-blue);font-weight:500}
+.sb-room .rc{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sb-room .rn{font-size:.875rem;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-room .rcode{font-size:.7rem;color:var(--grey);font-weight:700}
+.sb-add{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:0 20px 20px 0;cursor:pointer;color:var(--grey);font-size:.875rem;border:none;background:transparent;width:100%;margin-right:8px;transition:background .15s}
+.sb-add:hover{background:var(--bg)}
+.sb-info{padding:12px 16px;font-size:.78rem;color:var(--grey);border-top:1px solid var(--border);line-height:1.6}
+.sb-info b{color:var(--blue)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.no-room{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--grey);text-align:center;padding:40px}
+.no-room .ico{font-size:4rem;margin-bottom:14px;opacity:.4}
+.banner{height:172px;background:var(--blue);flex-shrink:0;position:relative;overflow:hidden}
+.banner-grid{position:absolute;inset:0;opacity:.14;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.7) 39px,rgba(255,255,255,.7) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.7) 39px,rgba(255,255,255,.7) 40px)}
+.banner-info{position:absolute;bottom:0;left:0;right:0;padding:12px 24px 18px;background:linear-gradient(transparent,rgba(0,0,0,.32))}
+.banner-title{font-size:1.75rem;font-weight:400;color:#fff}.banner-sub{font-size:.875rem;color:rgba(255,255,255,.88);margin-top:2px}
+.banner-btns{position:absolute;top:12px;right:14px;display:flex;gap:8px}
+.banner-btn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:4px;padding:6px 14px;font-size:.8rem;cursor:pointer;font-weight:500}
+.banner-btn:hover{background:rgba(255,255,255,.3)}
+.tabs{background:#fff;border-bottom:1px solid var(--border);display:flex;flex-shrink:0;overflow-x:auto}
+.tabs::-webkit-scrollbar{display:none}
+.tab{height:48px;padding:0 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-size:.875rem;font-weight:500;color:var(--grey);cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab:hover{color:var(--blue);background:#f8f9ff}.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.pages{flex:1;overflow:hidden;position:relative}
+.page{display:none;position:absolute;inset:0;overflow-y:auto;background:var(--bg)}
+.page.on{display:block}
+.wrap{max-width:900px;margin:0 auto;padding:20px 16px}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:8px;box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+.card-head{padding:14px 18px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:8px}
+.card-title{font-size:.9rem;font-weight:500;flex:1}
+.card-body{padding:16px 18px}
+.stats{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.stat{background:#fff;border-radius:8px;box-shadow:var(--sh);padding:12px 16px;flex:1;min-width:80px;text-align:center}
+.stat-n{font-size:1.5rem;font-weight:700}.stat-l{font-size:.72rem;color:var(--grey);margin-top:2px}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 20px;border-radius:4px;border:none;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue2)}
+.btn-out{background:#fff;border:1px solid var(--border);color:var(--blue)}.btn-out:hover{background:var(--bg-blue)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#0d7a41}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b31412}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-sm{padding:5px 12px;font-size:.8rem}
+.btn-txt{background:transparent;border:none;color:var(--blue);padding:6px 10px}.btn-txt:hover{background:var(--bg-blue)}
+
+/* ── FORM ELEMENTS ── */
+.lbl{display:block;font-size:.75rem;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.inp{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:4px;font-size:.875rem;outline:none;transition:border .2s;background:#fff}
+.inp:focus{border-color:var(--blue);border-bottom-width:2px}
+.ta{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:4px;font-size:.875rem;outline:none;resize:vertical;min-height:80px;transition:border .2s}
+.ta:focus{border-color:var(--blue);border-bottom-width:2px}
+.sel{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:4px;font-size:.875rem;background:#fff;outline:none}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.fgrid{grid-template-columns:1fr}}
+
+/* ── HOUSE CARDS ── */
+.house-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
+@media(max-width:600px){.house-grid{grid-template-columns:1fr}}
+.house-card{border-radius:12px;padding:16px;color:#fff;position:relative;overflow:hidden;box-shadow:var(--sh2)}
+.house-card .hc-bg{position:absolute;inset:0;opacity:.15;background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,.5) 8px,rgba(255,255,255,.5) 9px)}
+.house-card .hc-content{position:relative}
+.house-card .hc-emoji{font-size:2rem;margin-bottom:4px}
+.house-card .hc-name{font-size:1rem;font-weight:700;margin-bottom:2px}
+.house-card .hc-hp{font-size:1.6rem;font-weight:700;color:#FFD54F}
+.house-card .hc-label{font-size:.75rem;opacity:.8}
+.house-card .hc-members{font-size:.78rem;margin-top:8px;opacity:.88}
+.hp-btn{background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:4px;padding:5px 12px;font-size:.8rem;cursor:pointer;font-weight:700;margin-top:8px}
+.hp-btn:hover{background:rgba(255,255,255,.4)}
+
+/* ── CW ITEMS ── */
+.cw-item{background:#fff;border-radius:8px;box-shadow:var(--sh);display:flex;align-items:stretch;overflow:hidden;margin-bottom:8px;cursor:pointer;transition:box-shadow .2s}
+.cw-item:hover{box-shadow:var(--sh2)}
+.cw-stripe{width:5px;flex-shrink:0}
+.cw-body{flex:1;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.cw-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.cw-title{font-size:.9rem;font-weight:500;margin-bottom:2px}
+.cw-meta{font-size:.75rem;color:var(--grey)}
+.cw-del{background:none;border:none;color:#ccc;cursor:pointer;padding:8px 12px;font-size:1rem}
+.cw-del:hover{color:var(--red)}
+.cw-expand{display:none;padding:12px 18px;background:#fafafa;border-top:1px solid #f5f5f5;font-size:.875rem;color:var(--grey);line-height:1.6}
+.cw-expand.open{display:block}
+
+/* ── VIDEO CARDS ── */
+.video-card{background:#fff;border-radius:8px;box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
+.yt-embed{width:100%;aspect-ratio:16/9;border:none}
+.video-card-info{padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.video-card-title{font-size:.875rem;font-weight:500}
+
+/* ── LIVE EVENT CARDS ── */
+.event-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:600px){.event-grid{grid-template-columns:1fr}}
+.event-btn{padding:18px 14px;border-radius:12px;border:2px solid var(--border);background:#fff;cursor:pointer;text-align:center;transition:all .2s}
+.event-btn:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.event-btn.active{border-color:var(--green);background:#e6f4ea}
+.event-btn .ev-ico{font-size:2.5rem;display:block;margin-bottom:8px}
+.event-btn .ev-name{font-size:.9rem;font-weight:700;color:var(--text);display:block;margin-bottom:3px}
+.event-btn .ev-desc{font-size:.75rem;color:var(--grey)}
+
+/* ── LIVE STATUS ── */
+.live-status{background:linear-gradient(135deg,#1b5e20,#2e7d32);border-radius:12px;padding:18px;color:#fff;margin-bottom:14px}
+.live-badge{background:#fff;color:var(--green);border-radius:20px;padding:3px 12px;font-size:.78rem;font-weight:700;display:inline-block;margin-bottom:8px}
+.answers-list{background:rgba(255,255,255,.15);border-radius:8px;padding:12px;margin-top:10px;max-height:200px;overflow-y:auto}
+.answer-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.15);font-size:.84rem}
+.answer-row:last-child{border:none}
+
+/* ── PEOPLE ── */
+.p-sec{padding:10px 18px 7px;font-size:.78rem;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)}
+.person{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid #f8f8f8;transition:background .15s}
+.person:hover{background:#fafafa}
+.p-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.84rem;flex-shrink:0}
+.p-name{font-size:.9rem;font-weight:500}.p-meta{font-size:.74rem;color:var(--grey);margin-top:1px}
+.p-dot{width:8px;height:8px;border-radius:50%;background:#dadce0;display:inline-block;margin-left:5px;vertical-align:middle}
+.p-dot.live{background:var(--green)}
+.p-bar{height:4px;background:#f1f3f4;border-radius:4px;margin-top:4px;width:100px;overflow:hidden}
+.p-fill{height:100%;border-radius:4px}
+
+/* ── CHAT ── */
+.chatbox{height:260px;overflow-y:auto;background:#f8f9ff;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--border)}
+.cm{max-width:80%;padding:8px 12px;border-radius:12px;font-size:.875rem;line-height:1.4}
+.cm.me{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.cm.them{background:#e8eaf6;color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.cm .sn{font-size:.7rem;font-weight:700;opacity:.75;margin-bottom:2px}
+.chat-row{display:flex;gap:8px;margin-top:8px}
+.chat-row input{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:24px;font-size:.875rem;outline:none}
+.chat-row input:focus{border-color:var(--blue)}
+.chat-send{background:var(--blue);color:#fff;border:none;border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:.9rem;flex-shrink:0}
+
+/* ── DISCO ── */
+.disco-card{background:linear-gradient(135deg,#6a11cb,#2575fc);border-radius:8px;padding:20px;text-align:center;color:#fff;margin-bottom:14px}
+
+/* ── GRADES ── */
+.sub-table{width:100%;border-collapse:collapse;font-size:.84rem}
+.sub-table th{padding:8px 12px;background:#f8f9ff;font-weight:600;text-align:left;border-bottom:2px solid var(--border)}
+.sub-table td{padding:8px 12px;border-bottom:1px solid #f5f5f5}
+.sub-table tr:hover td{background:#f8f9ff}
+.score-pill{display:inline-flex;align-items:center;padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:700}
+
+/* ── FORM THEMES ── */
+.form-preview{border-radius:8px;padding:14px;margin:12px 0;border:2px solid var(--blue)}
+.theme-blue{background:linear-gradient(135deg,#e8f0fe,#fff);border-color:var(--blue)}
+.theme-green{background:linear-gradient(135deg,#e6f4ea,#fff);border-color:var(--green)}
+.theme-purple{background:linear-gradient(135deg,#f3e5f5,#fff);border-color:var(--purple)}
+.theme-orange{background:linear-gradient(135deg,#fef7e0,#fff);border-color:var(--orange)}
+.theme-red{background:linear-gradient(135deg,#fce8e6,#fff);border-color:var(--red)}
+.fq{background:rgba(255,255,255,.9);border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:var(--sh)}
+.fq-text{font-size:.875rem;font-weight:500;margin-bottom:8px}
+.fq-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;font-size:.84rem;margin-bottom:3px}
+.fq-opt.correct{background:#e6f4ea;color:var(--green);font-weight:500}
+.fq-opt:not(.correct){color:var(--grey)}
+
+/* ── ALERTS ── */
+.alert{border-radius:4px;padding:12px 16px;font-size:.84rem;margin-bottom:12px;border-left:3px solid}
+.alert-info{background:var(--bg-blue);border-color:var(--blue);color:#174ea6}
+.alert-ok{background:#e6f4ea;border-color:var(--green);color:#137333}
+
+/* ── MODALS ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal-box{background:#fff;border-radius:8px;padding:24px;width:100%;max-width:600px;box-shadow:0 8px 40px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:1rem;font-weight:500;margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.cpick{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .2s}
+.cpick:hover,.cpick.on{border-color:#fff;outline:2px solid var(--text);transform:scale(1.1)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--grey);font-size:.82rem;cursor:pointer;transition:all .2s}
+.chip.on{background:var(--bg-blue);color:var(--blue);border-color:var(--blue)}
+.qr-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;align-items:center;justify-content:center;cursor:pointer}
+.qr-ov.open{display:flex}
+.qr-box{background:#fff;border-radius:16px;padding:28px;text-align:center;cursor:default}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:4px}
+
+/* ── FORM BUILDER ─────────────────────────────── */
+.fb-wrap{display:flex;flex-direction:column;gap:12px}
+.fb-header{background:#fff;border-radius:8px;border:1px solid var(--border);overflow:hidden}
+.fb-header-stripe{height:10px;background:var(--blue);transition:background .3s}
+.fb-header-body{padding:14px}
+.fb-title-inp{width:100%;border:none;border-bottom:2px solid var(--border);font-size:1.2rem;font-weight:500;padding:6px 0;outline:none;font-family:inherit;color:var(--text);background:transparent}
+.fb-title-inp:focus{border-bottom-color:var(--blue)}
+.fb-desc-inp{width:100%;border:none;border-bottom:1px solid var(--border);font-size:.875rem;padding:6px 0;outline:none;font-family:inherit;color:var(--grey);background:transparent;margin-top:8px;resize:none}
+.fb-desc-inp:focus{border-bottom-color:var(--blue)}
+.fb-q-card{background:#fff;border-radius:8px;border:1px solid var(--border);overflow:hidden;position:relative;border-left:4px solid var(--blue)}
+.fb-q-card.focused{box-shadow:var(--sh2);border-left-color:var(--blue)}
+.fb-q-body{padding:14px}
+.fb-q-text{width:100%;border:none;border-bottom:2px solid var(--border);font-size:.95rem;padding:6px 0;outline:none;font-family:inherit;color:var(--text);background:transparent;margin-bottom:12px}
+.fb-q-text:focus{border-bottom-color:var(--blue)}
+.fb-q-type{padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-size:.82rem;background:#fff;outline:none;font-family:inherit;margin-bottom:12px}
+.fb-option{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.fb-option input[type=text]{flex:1;border:none;border-bottom:1px solid var(--border);padding:5px 0;font-size:.875rem;outline:none;font-family:inherit;background:transparent}
+.fb-option input[type=text]:focus{border-bottom-color:var(--blue)}
+.fb-radio{width:16px;height:16px;border:2px solid var(--border);border-radius:50%;flex-shrink:0;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center}
+.fb-radio.checked{border-color:var(--blue);background:var(--blue)}
+.fb-radio.checked::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff}
+.fb-check{width:16px;height:16px;border:2px solid var(--border);border-radius:3px;flex-shrink:0}
+.fb-del-opt{background:none;border:none;color:#ccc;cursor:pointer;font-size:1rem;padding:2px 6px}
+.fb-del-opt:hover{color:var(--red)}
+.fb-add-opt{background:none;border:none;color:var(--blue);cursor:pointer;font-size:.82rem;padding:5px 0;font-family:inherit;display:flex;align-items:center;gap:4px}
+.fb-q-footer{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid #f5f5f5;background:#fafafa}
+.fb-del-q{background:none;border:none;color:var(--grey);cursor:pointer;font-size:1rem;padding:4px 8px;border-radius:4px;margin-left:auto}
+.fb-del-q:hover{color:var(--red);background:#fce8e6}
+.fb-add-q-bar{background:#fff;border-radius:8px;border:2px dashed var(--border);padding:14px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.fb-add-q-bar button{padding:8px 16px;border-radius:4px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:.82rem;font-family:inherit;color:var(--grey);transition:all .2s;display:flex;align-items:center;gap:5px}
+.fb-add-q-bar button:hover{border-color:var(--blue);color:var(--blue);background:var(--bg-blue)}
+.theme-strip{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0}
+.theme-btn{width:28px;height:28px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .2s}
+.theme-btn.on{border-color:#fff;outline:2px solid var(--text);transform:scale(1.1)}
+.correct-badge{font-size:.7rem;background:#e6f4ea;color:var(--green);padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <button class="ham" onclick="toggleSb()">☰</button>
+  <div class="brand">🌟 Bright<em>Mind</em></div>
+  <span id="topRoomName" style="font-size:.9rem;color:var(--grey);padding-left:12px;border-left:1px solid var(--border);margin-left:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">No room</span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+    <button class="room-chip" onclick="copyLink()" id="topCode">+ Create Room</button>
+    <button class="tb-btn" onclick="openQR()">▣</button>
+    <div class="av">T</div>
+    <span style="font-size:.75rem;color:var(--grey)" id="tDate"></span>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sb-inner">
+      <div class="sb-sec">My Rooms</div>
+      <div id="roomList"><div style="padding:12px 16px;color:var(--grey);font-size:.84rem">No rooms yet.<br>Create one below!</div></div>
+      <button class="sb-add" onclick="openCreateRoom()"><span style="font-size:1.2rem">＋</span> Create or join room</button>
+    </div>
+    <div class="sb-info" id="serverInfo">Loading...</div>
+  </div>
+
+  <div class="main" id="mainArea">
+    <div class="no-room" id="noRoomState">
+      <div class="ico">📚</div>
+      <h2 style="font-size:1.1rem;font-weight:500;color:var(--text);margin-bottom:8px">Create your first classroom</h2>
+      <p>Click <strong>+ Create or join room</strong> in the sidebar</p>
+      <button class="btn btn-blue" onclick="openCreateRoom()" style="margin-top:16px">＋ Create Room</button>
+    </div>
+
+    <div id="roomContent" style="display:none;flex-direction:column;overflow:hidden">
+      <div class="banner" id="banner">
+        <div class="banner-grid"></div>
+        <div class="banner-info">
+          <div class="banner-title" id="bannerTitle">My Classroom</div>
+          <div class="banner-sub" id="bannerSub">Code: — · 0 students</div>
+        </div>
+        <div class="banner-btns">
+          <button class="banner-btn" onclick="openCustomise()">🎨 Customise</button>
+          <button class="banner-btn" onclick="openQR()">▣ QR Code</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab on" data-tab="stream" onclick="goTab(this)">Stream</button>
+        <button class="tab" data-tab="classwork" onclick="goTab(this)">Classwork</button>
+        <button class="tab" data-tab="events" onclick="goTab(this)">🎯 Live Events</button>
+        <button class="tab" data-tab="houses" onclick="goTab(this)">🏆 House Points</button>
+        <button class="tab" data-tab="people" onclick="goTab(this)">People</button>
+        <button class="tab" data-tab="grades" onclick="goTab(this)">Grades</button>
+        <button class="tab" data-tab="chat" onclick="goTab(this)">Chat</button>
+      </div>
+      <div class="pages">
+
+        <!-- STREAM -->
+        <div class="page on" id="page-stream">
+          <div class="wrap">
+            <div class="stats">
+              <div class="stat"><div class="stat-n" id="ovStu" style="color:var(--blue)">0</div><div class="stat-l">Students</div></div>
+              <div class="stat"><div class="stat-n" id="ovHW" style="color:var(--green)">0</div><div class="stat-l">Classwork</div></div>
+              <div class="stat"><div class="stat-n" id="ovMsg" style="color:var(--grey)">0</div><div class="stat-l">Messages</div></div>
+              <div class="stat"><div class="stat-n" id="ovHP" style="color:#f9ab00">—</div><div class="stat-l">Leading House</div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><span class="card-title">📢 Announcement</span></div>
+              <div class="card-body">
+                <textarea class="ta inp" id="annText" rows="2" placeholder="Announce something — appears immediately on all student screens..."></textarea>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button onclick="sendAnn()" class="btn btn-blue btn-sm">📢 Send to All</button>
+                  <button onclick="clearAnn()" class="btn btn-out btn-sm">✕ Clear</button>
+                </div>
+              </div>
+            </div>
+            <div class="disco-card">
+              <div style="font-size:2.5rem;margin-bottom:6px">🪩</div>
+              <div style="font-size:1rem;font-weight:500;margin-bottom:3px">Disco Mode!</div>
+              <div style="opacity:.82;font-size:.84rem;margin-bottom:12px">Raining Tacos plays on ALL screens!</div>
+              <button onclick="sendDisco()" style="background:#FFD54F;color:#1a1a2e;border:none;border-radius:4px;padding:10px 24px;font-size:.9rem;font-weight:700;cursor:pointer">🎉 Launch Disco!</button>
+            </div>
+            <div class="card">
+              <div class="card-head"><span class="card-title">📡 Live Activity</span><button onclick="loadStream()" class="btn-txt btn-sm">↻</button></div>
+              <div class="card-body" id="actFeed" style="min-height:50px"><p style="color:var(--grey);font-size:.84rem">No activity yet.</p></div>
+            </div>
+            <div class="alert alert-info">💡 Code: <strong id="inlineCode">—</strong> · Share <strong id="inlineLink" style="word-break:break-all"></strong></div>
+          </div>
+        </div>
+
+        <!-- CLASSWORK -->
+        <div class="page" id="page-classwork">
+          <div class="wrap">
+            <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+              <button onclick="openAIForm()" class="btn btn-blue">🤖 Create with AI</button>
+              <button onclick="openFormBuilder()" class="btn btn-green">📋 Build Form</button>
+              <button onclick="openManualForm()" class="btn btn-out">📝 Create manually</button>
+              <button onclick="openVideoShare()" class="btn btn-purple">📹 Share Video</button>
+            </div>
+            <!-- Videos -->
+            <div id="mediaSection" style="display:none">
+              <div class="card-head" style="font-size:.88rem;font-weight:600;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;padding:12px 0 8px">📹 Shared Videos</div>
+              <div id="mediaList"></div>
+            </div>
+            <div id="hwList"><div class="alert alert-info">No classwork yet. Click <strong>Create with AI</strong> to generate a styled form!</div></div>
+          </div>
+        </div>
+
+        <!-- LIVE EVENTS -->
+        <div class="page" id="page-events">
+          <div class="wrap">
+            <div id="activeEventPanel" style="display:none">
+              <div class="live-status">
+                <div class="live-badge">🔴 LIVE</div>
+                <div style="font-size:1.1rem;font-weight:500;margin-bottom:4px" id="activeEventTitle">Live Event</div>
+                <div style="font-size:.84rem;opacity:.82" id="activeEventDesc">Students are answering...</div>
+                <div class="answers-list" id="answersList"></div>
+                <div style="margin-top:10px;display:flex;gap:8px">
+                  <button onclick="endEvent()" class="btn btn-red btn-sm">⏹️ End Event</button>
+                  <span style="font-size:.84rem;color:rgba(255,255,255,.7);align-self:center" id="ansCount">0 answered</span>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-head"><span class="card-title">🎯 Launch a Live Event</span></div>
+              <div class="card-body">
+                <div class="event-grid">
+                  <button class="event-btn" onclick="launchQuizBattle()">
+                    <span class="ev-ico">⚡</span>
+                    <span class="ev-name">Quiz Battle</span>
+                    <span class="ev-desc">Everyone answers — fastest wins stars!</span>
+                  </button>
+                  <button class="event-btn" onclick="launchStarSprint()">
+                    <span class="ev-ico">⭐</span>
+                    <span class="ev-name">Star Sprint</span>
+                    <span class="ev-desc">Race to earn as many stars as possible!</span>
+                  </button>
+                  <button class="event-btn" onclick="launchFootball()">
+                    <span class="ev-ico">⚽</span>
+                    <span class="ev-name">Football Predictor</span>
+                    <span class="ev-desc">Predict the match winner — 2026 World Cup!</span>
+                  </button>
+                  <button class="event-btn" onclick="launchRickroll()">
+                    <span class="ev-ico">🎵</span>
+                    <span class="ev-name">Rickroll!</span>
+                    <span class="ev-desc">Never gonna give you up... 😂</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head"><span class="card-title">📊 Event Results</span></div>
+              <div class="card-body" id="eventResults"><p style="color:var(--grey);font-size:.84rem">No events yet today.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HOUSE POINTS -->
+        <div class="page" id="page-houses">
+          <div class="wrap">
+            <div class="alert alert-info">🏆 <strong>House Points (HP)</strong> — students earn 1 HP for every 20 stars, or when they score 70%+ on a homework form. You can also award HP manually below.</div>
+            <!-- HP Leaderboard -->
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-head"><span class="card-title">🏆 HP Leaderboard</span><button onclick="loadStream()" class="btn-txt btn-sm">↻</button></div>
+              <div class="card-body" id="hpLeaderboard"><p style="color:var(--grey);font-size:.84rem">No students yet.</p></div>
+            </div>
+            <!-- Award HP -->
+            <div class="card">
+              <div class="card-head"><span class="card-title">🎁 Award House Points</span></div>
+              <div class="card-body">
+                <div class="fgrid">
+                  <div>
+                    <label class="lbl">Student</label>
+                    <select class="sel" id="awardStudent" style="margin-bottom:10px"><option value="">— pick student —</option></select>
+                  </div>
+                  <div>
+                    <label class="lbl">Points to Award</label>
+                    <select class="sel" id="awardAmt" style="margin-bottom:10px">
+                      <option value="1">+1 HP</option>
+                      <option value="3">+3 HP</option>
+                      <option value="5">+5 HP</option>
+                      <option value="10">+10 HP</option>
+                    </select>
+                  </div>
+                </div>
+                <label class="lbl">Reason</label>
+                <input class="inp" id="awardReason" type="text" placeholder="e.g. Outstanding work this week! 🌟" style="margin-bottom:10px">
+                <button onclick="awardHP()" class="btn btn-orange">🏆 Award HP</button>
+                <div class="alert alert-ok" id="awardFb" style="display:none;margin-top:8px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PEOPLE -->
+        <div class="page" id="page-people">
+          <div class="wrap">
+            <div class="alert alert-info">Students join when they open the Student App and enter your room code.</div>
+            <div class="card">
+              <div class="p-sec" style="display:flex;align-items:center">
+                <span>Students (<span id="stuCount">0</span>)</span>
+                <button onclick="clearStudents()" class="btn btn-sm" style="margin-left:auto;color:var(--red);border:1px solid var(--red);background:#fff">🗑️ Clear</button>
+              </div>
+              <div id="stuList"><p style="padding:14px 18px;color:var(--grey);font-size:.84rem">No students yet.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRADES -->
+        <div class="page" id="page-grades">
+          <div class="wrap"><div id="gradesContent"><div class="alert alert-info">Grades appear when students submit AI homework forms.</div></div></div>
+        </div>
+
+        <!-- CHAT -->
+        <div class="page" id="page-chat">
+          <div class="wrap">
+            <div class="card">
+              <div class="card-head"><span class="card-title">💬 Class Chat</span></div>
+              <div class="card-body">
+                <div class="chatbox" id="chatBox"></div>
+                <div class="chat-row">
+                  <input type="text" id="chatIn" placeholder="Message your class..." onkeydown="if(event.key==='Enter')sendChat()">
+                  <button class="chat-send" onclick="sendChat()">➤</button>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+                  <button onclick="sendChat('⭐ Great work today!')" class="btn btn-out btn-sm">⭐ Great work!</button>
+                  <button onclick="sendChat('📚 Remember homework!')" class="btn btn-out btn-sm">📚 Reminder</button>
+                  <button onclick="sendChat('🕐 Starting soon!')" class="btn btn-out btn-sm">🕐 Starting soon</button>
+                  <button onclick="clearChat()" class="btn btn-sm" style="color:var(--red);border:1px solid var(--red);background:#fff">🗑️ Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR OVERLAY -->
+<div class="qr-ov" id="qrOv" onclick="this.classList.remove('open')">
+  <div class="qr-box" onclick="event.stopPropagation()">
+    <img id="qrImg" src="" style="width:260px;height:260px;display:block" alt="">
+    <div style="font-size:1rem;font-weight:500;margin-top:12px">Show this to your students</div>
+    <div style="font-size:1.8rem;font-weight:700;color:var(--blue);letter-spacing:6px;margin:6px 0" id="qrCode">—</div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:center">
+      <button onclick="copyLink()" class="btn btn-blue btn-sm">🔗 Copy Link</button>
+      <button onclick="document.getElementById('qrOv').classList.remove('open')" class="btn btn-out btn-sm">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE ROOM MODAL -->
+<div class="modal-bg" id="createModal">
+  <div class="modal-box">
+    <div class="modal-title">📚 Create New Classroom</div>
+    <label class="lbl">Class Name</label>
+    <input class="inp" id="newRoomName" type="text" placeholder="e.g. Mr Smith — Year 2" style="margin-bottom:12px">
+    <label class="lbl">Banner Colour</label>
+    <div class="color-row" id="colorPicker" style="margin-bottom:16px">
+      <div class="cpick on" data-c="#1a73e8" onclick="pickColor(this)" style="background:#1a73e8"></div>
+      <div class="cpick" data-c="#0f9d58" onclick="pickColor(this)" style="background:#0f9d58"></div>
+      <div class="cpick" data-c="#7b1fa2" onclick="pickColor(this)" style="background:#7b1fa2"></div>
+      <div class="cpick" data-c="#d93025" onclick="pickColor(this)" style="background:#d93025"></div>
+      <div class="cpick" data-c="#e65100" onclick="pickColor(this)" style="background:#e65100"></div>
+      <div class="cpick" data-c="#00695c" onclick="pickColor(this)" style="background:#00695c"></div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('createModal').classList.remove('open')" class="btn btn-out">Cancel</button>
+      <button onclick="createRoom()" class="btn btn-blue">📚 Create Room</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMISE MODAL -->
+<div class="modal-bg" id="custModal">
+  <div class="modal-box">
+    <div class="modal-title">🎨 Customise Your Class</div>
+    <label class="lbl">Class Name</label>
+    <input class="inp" id="custName" type="text" style="margin-bottom:12px">
+    <label class="lbl">Banner Colour</label>
+    <div class="color-row" id="custColorPicker" style="margin-bottom:16px">
+      <div class="cpick on" data-c="#1a73e8" onclick="pickCustColor(this)" style="background:#1a73e8"></div>
+      <div class="cpick" data-c="#0f9d58" onclick="pickCustColor(this)" style="background:#0f9d58"></div>
+      <div class="cpick" data-c="#7b1fa2" onclick="pickCustColor(this)" style="background:#7b1fa2"></div>
+      <div class="cpick" data-c="#d93025" onclick="pickCustColor(this)" style="background:#d93025"></div>
+      <div class="cpick" data-c="#e65100" onclick="pickCustColor(this)" style="background:#e65100"></div>
+      <div class="cpick" data-c="#00695c" onclick="pickCustColor(this)" style="background:#00695c"></div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('custModal').classList.remove('open')" class="btn btn-out">Cancel</button>
+      <button onclick="saveCustomise()" class="btn btn-blue">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI FORM MODAL -->
+<div class="modal-bg" id="aiModal">
+  <div class="modal-box">
+    <div class="modal-title">🤖 Create Homework with AI</div>
+    <label class="lbl">Describe the homework</label>
+    <textarea class="ta inp" id="aiPrompt" rows="3" placeholder="e.g. 5 fun questions about animals for Year 1, make it colourful and exciting!"></textarea>
+    <div class="fgrid" style="margin-top:10px">
+      <div><label class="lbl">Subject</label><select class="sel" id="aiSubject"><option>📐 Maths</option><option>📖 Reading</option><option>🔬 Science</option><option>🇬🇧 English</option><option>🇷🇺 Russian</option><option>🎨 Art</option></select></div>
+      <div><label class="lbl">Form Theme</label>
+        <select class="sel" id="aiTheme">
+          <option value="blue">🔵 Blue (classic)</option>
+          <option value="green">🟢 Green (nature)</option>
+          <option value="purple">🟣 Purple (fun)</option>
+          <option value="orange">🟠 Orange (energy)</option>
+          <option value="red">🔴 Red (exciting)</option>
+        </select>
+      </div>
+    </div>
+    <div class="fgrid" style="margin-top:10px">
+      <div><label class="lbl">Year Group</label>
+        <div class="chips" style="margin-top:4px">
+          <button class="chip on" data-yr="Y1" onclick="pickYr(this)">Year 1</button>
+          <button class="chip" data-yr="Y2" onclick="pickYr(this)">Year 2</button>
+          <button class="chip" data-yr="Both" onclick="pickYr(this)">Both</button>
+        </div>
+      </div>
+      <div><label class="lbl">Due Date</label><input class="inp" id="aiDue" type="text" placeholder="e.g. Friday"></div>
+    </div>
+    <div id="aiLoading" style="display:none;text-align:center;padding:20px;color:var(--blue)">🤖 AI is generating your form...<div style="font-size:.8rem;color:var(--grey);margin-top:5px">About 10 seconds</div></div>
+    <div id="formPreview" style="display:none;margin-top:12px"></div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('aiModal').classList.remove('open');resetAIModal()" class="btn btn-out">Cancel</button>
+      <button onclick="generateAIForm()" class="btn btn-blue" id="aiGenBtn">🤖 Generate</button>
+      <button onclick="publishAIForm()" class="btn btn-green" id="aiPubBtn" style="display:none">✅ Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANUAL FORM MODAL -->
+<div class="modal-bg" id="manualModal">
+  <div class="modal-box">
+    <div class="modal-title">📝 Create Assignment</div>
+    <div class="fgrid">
+      <div><label class="lbl">Title</label><input class="inp" id="mTitle" type="text" placeholder="e.g. Maths Week 3"></div>
+      <div><label class="lbl">Subject</label><select class="sel" id="mSubject"><option>📐 Maths</option><option>📖 Reading</option><option>🔬 Science</option><option>🇬🇧 English</option><option>🇷🇺 Russian</option></select></div>
+    </div>
+    <div class="fgrid" style="margin-top:10px">
+      <div><label class="lbl">Year</label><div class="chips" style="margin-top:4px"><button class="chip on" data-yr="Y1" onclick="pickYr(this)">Year 1</button><button class="chip" data-yr="Y2" onclick="pickYr(this)">Year 2</button><button class="chip" data-yr="Both" onclick="pickYr(this)">Both</button></div></div>
+      <div><label class="lbl">Due</label><input class="inp" id="mDue" type="text" placeholder="e.g. Friday"></div>
+    </div>
+    <div style="margin-top:10px"><label class="lbl">Instructions</label><textarea class="ta inp" id="mInstr" rows="4" placeholder="Write clear instructions for students..."></textarea></div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('manualModal').classList.remove('open')" class="btn btn-out">Cancel</button>
+      <button onclick="publishManual()" class="btn btn-blue">✅ Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO SHARE MODAL -->
+<div class="modal-bg" id="videoModal">
+  <div class="modal-box">
+    <div class="modal-title">📹 Share a Video</div>
+    <label class="lbl">YouTube URL or any video link</label>
+    <input class="inp" id="vidUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." style="margin-bottom:10px">
+    <label class="lbl">Title</label>
+    <input class="inp" id="vidTitle" type="text" placeholder="e.g. The Water Cycle explained!" style="margin-bottom:10px">
+    <label class="lbl">Description (optional)</label>
+    <input class="inp" id="vidDesc" type="text" placeholder="e.g. Watch this before doing the homework" style="margin-bottom:10px">
+    <div id="vidPreview" style="display:none;margin:10px 0;aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:1px solid var(--border)"></div>
+    <div class="modal-actions">
+      <button onclick="previewVideo()" class="btn btn-out">👁️ Preview</button>
+      <button onclick="document.getElementById('videoModal').classList.remove('open')" class="btn btn-out">Cancel</button>
+      <button onclick="shareVideo()" class="btn btn-purple">📹 Share with Class</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ BATTLE MODAL -->
+<div class="modal-bg" id="quizBattleModal">
+  <div class="modal-box">
+    <div class="modal-title">⚡ Quiz Battle</div>
+    <label class="lbl">Question</label>
+    <input class="inp" id="qbQuestion" type="text" placeholder="e.g. What is 7 × 8?" style="margin-bottom:10px">
+    <div class="fgrid">
+      <div><label class="lbl">Option A</label><input class="inp" id="qbA" type="text" placeholder="Option A"></div>
+      <div><label class="lbl">Option B</label><input class="inp" id="qbB" type="text" placeholder="Option B"></div>
+      <div><label class="lbl">Option C</label><input class="inp" id="qbC" type="text" placeholder="Option C"></div>
+      <div><label class="lbl">Option D</label><input class="inp" id="qbD" type="text" placeholder="Option D"></div>
+    </div>
+    <div style="margin-top:10px">
+      <label class="lbl">Correct Answer</label>
+      <select class="sel" id="qbCorrect" style="margin-bottom:0">
+        <option value="">-- pick correct --</option>
+        <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('quizBattleModal').classList.remove('open')" class="btn btn-out">Cancel</button>
+      <button onclick="sendQuizBattle()" class="btn btn-blue">⚡ Launch Battle!</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTBALL MODAL -->
+<div class="modal-bg" id="footballModal">
+  <div class="modal-box">
+    <div class="modal-title">⚽ Football Predictor — 2026 World Cup!</div>
+    <div class="alert alert-info">Students predict who wins — correct predictions earn stars & HP!</div>
+    <label class="lbl">Team A</label>
+    <input class="inp" id="ftA" type="text" placeholder="e.g. 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England" style="margin-bottom:10px">
+    <label class="lbl">Team B</label>
+    <input class="inp" id="ftB" type="text" placeholder="e.g. 🇷🇺 Russia" style="margin-bottom:10px">
+    <div class="modal-actions">
+      <button onclick="document.getElementById('footballModal').classList.remove('open')" class="btn btn-out">Cancel</button>
+      <button onclick="sendFootball()" class="btn btn-green">⚽ Start Prediction!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ API ════════════════════════════════════════════
+async function api(m,p,b){try{const o={method:m,headers:{'Content-Type':'application/json'}};if(b)o.body=JSON.stringify(b);const r=await fetch('/api/'+p,o);return await r.json();}catch(e){return{ok:false,error:e.message};}}
+
+// ═══ STATE ══════════════════════════════════════════
+let currentRoom=null,roomData=null,pendingAIForm=null;
+let selYr='Y1',custColor='#1a73e8',createColor='#1a73e8';
+let pollTimer=null,chatHash='',activeEventId=null;
+const PAV=['#1a73e8','#0f9d58','#7b1fa2','#d93025','#e65100','#00695c','#c62828','#00838f'];
+
+// ═══ INIT ════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',async()=>{
+  document.getElementById('tDate').textContent=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const info=await api('GET','info');
+  if(info.ok){
+    document.getElementById('serverInfo').innerHTML=`<b>✅ Server running</b><br>Teacher: localhost:${location.port||5000}/teacher<br>Students: <b>${info.ip}:${location.port||5000}/student</b><br><br>Rooms: ${info.rooms} · Students: ${info.students}`;
+  }
+  await loadRoomList();
+  const last=localStorage.getItem('BM_lastRoom');
+  if(last)selectRoom(last);
+});
+
+// ═══ SIDEBAR ════════════════════════════════════════
+function toggleSb(){document.getElementById('sidebar').classList.toggle('collapsed');}
+
+async function loadRoomList(){
+  const res=await api('GET','rooms');
+  if(!res.ok)return;
+  const el=document.getElementById('roomList');
+  const rooms=Object.values(res.rooms||{});
+  if(!rooms.length){el.innerHTML='<div style="padding:12px 16px;color:var(--grey);font-size:.84rem">No rooms yet.</div>';return;}
+  el.innerHTML=rooms.map(r=>`<button class="sb-room ${currentRoom===r.code?'on':''}" onclick="selectRoom('${r.code}')"><div class="rc" style="background:${r.color}"></div><div><div class="rn">${r.name}</div><div class="rcode">${r.code} · ${r.students} 👥</div></div></button>`).join('');
+}
+
+// ═══ ROOM MANAGEMENT ════════════════════════════════
+function openCreateRoom(){document.getElementById('createModal').classList.add('open');document.getElementById('newRoomName').focus();}
+function pickColor(el){document.querySelectorAll('#colorPicker .cpick').forEach(e=>e.classList.remove('on'));el.classList.add('on');createColor=el.dataset.c;}
+
+async function createRoom(){
+  const name=document.getElementById('newRoomName').value.trim()||'My Classroom';
+  const res=await api('POST','rooms/create',{name,color:createColor});
+  if(!res.ok){alert('Error creating room: '+(res.error||'Unknown error'));return;}
+  document.getElementById('createModal').classList.remove('open');
+  document.getElementById('newRoomName').value='';
+  await loadRoomList();
+  selectRoom(res.code);
+}
+
+async function selectRoom(code){
+  currentRoom=code;
+  localStorage.setItem('BM_lastRoom',code);
+  document.getElementById('noRoomState').style.display='none';
+  const rc=document.getElementById('roomContent');
+  rc.style.display='flex';rc.style.flexDirection='column';rc.style.flex='1';rc.style.overflow='hidden';
+  document.querySelectorAll('.sb-room').forEach(b=>b.classList.toggle('on',b.textContent.includes(code)));
+  if(pollTimer)clearInterval(pollTimer);
+  await loadStream();
+  pollTimer=setInterval(loadStream,2500);
+}
+
+async function loadStream(){
+  if(!currentRoom)return;
+  const res=await api('GET',`rooms/${currentRoom}/poll`);
+  if(!res.ok)return;
+  roomData=res;
+  updateUI(res);
+}
+
+// ═══ UPDATE UI ═══════════════════════════════════════
+function updateUI(d){
+  // Banner
+  const b=document.getElementById('banner');
+  if(b){b.style.background=d.color;b.style.backgroundImage=`linear-gradient(135deg,${d.color},rgba(0,0,0,.28))`;}
+  const stus=Object.values(d.students||{}).filter(Boolean);
+  const online=stus.filter(s=>Date.now()/1000-s.lastSeen<30).length;
+  document.getElementById('bannerTitle').textContent=d.name;
+  document.getElementById('bannerSub').textContent=`Code: ${currentRoom} · ${stus.length} students (${online} online)`;
+  document.getElementById('topRoomName').textContent=d.name+' · '+currentRoom;
+  document.getElementById('topCode').textContent='🔗 '+currentRoom;
+  // Stats
+  // HP is per-student now, no separate houses
+  const el=id=>document.getElementById(id);
+  if(el('ovStu'))el('ovStu').textContent=stus.length;
+  if(el('ovHW'))el('ovHW').textContent=(d.homework||[]).length;
+  if(el('ovMsg'))el('ovMsg').textContent=(d.chat||[]).length;
+  const topStu=stus.sort((a,b)=>(b.hp||0)-(a.hp||0))[0];if(el('ovHP'))el('ovHP').textContent=topStu?(topStu.name.split(' ')[0]+' '+topStu.hp+'HP'):'—';
+  if(el('inlineCode'))el('inlineCode').textContent=currentRoom;
+  if(el('inlineLink'))el('inlineLink').textContent=`${location.origin}/student?room=${currentRoom}`;
+  // QR
+  const link=`${location.origin}/student?room=${currentRoom}`;
+  const qri=el('qrImg');if(qri)qri.src=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}`;
+  const qrc=el('qrCode');if(qrc)qrc.textContent=currentRoom;
+  // Activity
+  renderFeed(d.actLog||[]);
+  // Students
+  renderStudents(stus);
+  // Houses
+  renderHouses(stus);
+  // Homework
+  renderHW(d.homework||[]);
+  // Media
+  renderMedia(d.media||[]);
+  // Chat
+  renderChat(d.chat||[]);
+  // Grades
+  renderGrades(d.homework||[]);
+  // Active event
+  if(d.active_event){
+    activeEventId=d.active_event.id;
+    document.getElementById('activeEventPanel').style.display='block';
+    document.getElementById('activeEventTitle').textContent=d.active_event.title;
+    const answers=d.active_event.answers||{};
+    const ansCount=Object.keys(answers).length;
+    document.getElementById('ansCount').textContent=ansCount+' answered';
+    document.getElementById('answersList').innerHTML=Object.entries(answers).map(([name,a])=>`<div class="answer-row"><span>${name}</span><span style="font-weight:700">${a.answer}</span></div>`).join('');
+  } else {
+    activeEventId=null;
+    document.getElementById('activeEventPanel').style.display='none';
+  }
+  // Sidebar
+  loadRoomList();
+}
+
+function renderFeed(log){
+  const el=document.getElementById('actFeed');if(!el)return;
+  const feed=log.filter(l=>l.name!=='Teacher').slice(0,12);
+  if(!feed.length){el.innerHTML='<p style="color:var(--grey);font-size:.84rem">No activity yet.</p>';return;}
+  el.innerHTML=feed.map(l=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid #f8f8f8"><div style="width:28px;height:28px;border-radius:50%;background:var(--bg-blue);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0">${(l.name||'?').slice(0,2).toUpperCase()}</div><div><div style="font-size:.84rem"><strong>${l.name}</strong> ${l.txt}</div><div style="font-size:.72rem;color:var(--grey)">${new Date((l.time||0)*1000).toLocaleTimeString()}</div></div></div>`).join('');
+}
+
+function renderStudents(list){
+  const el=document.getElementById('stuList');if(!el)return;
+  const sc=document.getElementById('stuCount');if(sc)sc.textContent=list.length;
+  if(!list.length){el.innerHTML='<p style="padding:14px 18px;color:var(--grey);font-size:.84rem">No students yet.</p>';return;}
+  el.innerHTML=list.sort((a,b)=>(b.stars||0)-(a.stars||0)).map((s,i)=>{
+    const col=PAV[i%PAV.length];
+    const isOn=s.lastSeen&&Date.now()/1000-s.lastSeen<30;
+    const avg=s.prog?Math.round((s.prog.math+s.prog.read+s.prog.sci+s.prog.quiz)/4):0;
+    const hpBadge=s.house_id?`<span style="font-size:.7rem;padding:2px 8px;border-radius:10px;background:#fef7e0;color:#e37400;font-weight:700">${(roomData&&roomData.houses||[]).find(h=>h.id===s.house_id)?.emoji||''}</span>`:'';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid #f8f8f8"><div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.84rem;flex-shrink:0;background:${col}">${(s.name||'?').slice(0,2).toUpperCase()}</div><div style="flex:1"><div style="font-size:.9rem;font-weight:500">${s.name} ${s.lang==='ru'?'🇷🇺':'🇬🇧'} <span style="width:8px;height:8px;border-radius:50%;background:${isOn?'#0f9d58':'#dadce0'};display:inline-block;margin-left:5px;vertical-align:middle"></span> ${hpBadge}</div><div style="font-size:.74rem;color:var(--grey);margin-top:1px">⭐${s.stars||0} · ${avg}% · Y${s.yr||'?'} · ${isOn?'Active now':new Date((s.lastSeen||0)*1000).toLocaleTimeString()}</div><div style="height:4px;background:#f1f3f4;border-radius:4px;margin-top:4px;width:100px;overflow:hidden"><div style="height:100%;width:${avg}%;background:${col};border-radius:4px"></div></div></div></div>`;
+  }).join('');
+}
+
+function renderHouses(students){
+  // HP Leaderboard
+  const lb=document.getElementById('hpLeaderboard');
+  if(!lb)return;
+  const sorted=[...students].sort((a,b)=>(b.hp||0)-(a.hp||0));
+  if(!sorted.length){lb.innerHTML='<p style="color:var(--grey);font-size:.84rem">No students yet.</p>';return;}
+  const medals=['🥇','🥈','🥉'];
+  lb.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:.875rem">
+    <thead><tr style="border-bottom:2px solid var(--border)">
+      <th style="padding:8px 12px;text-align:left;font-weight:600">#</th>
+      <th style="padding:8px 12px;text-align:left;font-weight:600">Student</th>
+      <th style="padding:8px 12px;text-align:left;font-weight:600">⭐ Stars</th>
+      <th style="padding:8px 12px;text-align:left;font-weight:600">🏆 HP</th>
+      <th style="padding:8px 12px;text-align:left;font-weight:600">Actions</th>
+    </tr></thead>
+    <tbody>${sorted.map((s,i)=>`
+      <tr style="border-bottom:1px solid #f5f5f5">
+        <td style="padding:9px 12px;font-size:1rem">${medals[i]||'#'+(i+1)}</td>
+        <td style="padding:9px 12px;font-weight:500">${s.name} ${s.lang==='ru'?'🇷🇺':'🇬🇧'}</td>
+        <td style="padding:9px 12px">⭐ ${s.stars||0}</td>
+        <td style="padding:9px 12px"><span style="background:#fef7e0;color:#e37400;font-weight:700;padding:2px 10px;border-radius:12px;font-size:.82rem">🏆 ${s.hp||0} HP</span></td>
+        <td style="padding:9px 12px"><button onclick="quickAwardHP('${s.name}')" style="background:var(--orange);color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:.78rem;cursor:pointer;font-weight:600">+1 HP</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+  // Update student dropdown in award form
+  const sel=document.getElementById('awardStudent');
+  if(sel){sel.innerHTML='<option value="">— pick student —</option>'+sorted.map(s=>`<option value="${s.name}">${s.name} (${s.hp||0} HP)</option>`).join('');}
+}
+
+async function quickAwardHP(studentName){
+  await api('POST',`rooms/${currentRoom}/students/${encodeURIComponent(studentName)}/hp`,{amount:1,reason:'Quick award! 🌟'});
+  loadStream();
+}
+
+async function awardHP(){
+  const name=document.getElementById('awardStudent').value;
+  if(!name){alert('Please select a student!');return;}
+  const amount=parseInt(document.getElementById('awardAmt').value)||1;
+  const reason=document.getElementById('awardReason').value||'Well done!';
+  await api('POST',`rooms/${currentRoom}/students/${encodeURIComponent(name)}/hp`,{amount,reason});
+  const fb=document.getElementById('awardFb');
+  fb.textContent=`✅ +${amount} HP awarded to ${name}!`;fb.style.display='block';
+  setTimeout(()=>fb.style.display='none',3000);
+  document.getElementById('awardReason').value='';
+  loadStream();
+}
+
+const HW_COLS={'📐 Maths':'#1a73e8','📖 Reading':'#0f9d58','🔬 Science':'#7b1fa2','🇬🇧 English':'#00695c','🇷🇺 Russian':'#d93025','🎨 Art':'#e65100'};
+function renderHW(list){
+  const el=document.getElementById('hwList');if(!el)return;
+  document.getElementById('ovHW').textContent=list.length;
+  if(!list.length){el.innerHTML='<div class="alert alert-info">No classwork yet. Click <strong>Create with AI</strong> to generate a styled form!</div>';return;}
+  const THEMES={blue:'#1a73e8',green:'#0f9d58',purple:'#7b1fa2',orange:'#e37400',red:'#d93025'};
+  el.innerHTML=list.map(h=>{
+    const col=THEMES[h.theme]||HW_COLS[h.subject]||'#1a73e8';
+    const isForm=h.type==='form';const subs=Object.keys(h.submissions||{}).length;
+    return `<div class="cw-item"><div class="cw-stripe" style="background:${col}"></div><div class="cw-body" onclick="toggleHW('hx${h.id}')"><div class="cw-icon" style="background:${col}18;color:${col}">${isForm?'📋':'📝'}</div><div style="flex:1"><div class="cw-title">${h.title}</div><div class="cw-meta">${h.subject||''} · Y${h.year||'?'}${h.due?' · Due: '+h.due:''} ${isForm?'· AI Form':''}</div></div>${isForm&&subs>0?`<span style="background:#e6f4ea;color:var(--green);font-size:.72rem;padding:2px 8px;border-radius:12px;font-weight:700;white-space:nowrap">✅ ${subs} submitted</span>`:''}</div><button class="cw-del" onclick="event.stopPropagation();deleteHW('${h.id}')">✕</button></div><div class="cw-expand" id="hx${h.id}"><div style="background:${col}12;border-radius:6px;padding:10px;margin-bottom:8px"><strong>${h.title}</strong>${h.description?' — '+h.description:''}</div>${h.instructions||''}${isForm&&h.questions?`<br><br><strong>${h.questions.length} questions</strong>: ${h.questions.map(q=>q.text).join(' · ')}`:''}${subs>0?`<br><br><button onclick="viewSubmissions('${h.id}')" class="btn btn-out btn-sm">📊 View ${subs} submissions</button>`:''}</div></div>`;
+  }).join('');
+}
+function toggleHW(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
+async function deleteHW(id){if(!confirm('Delete?'))return;await api('DELETE',`rooms/${currentRoom}/homework/${id}`);await loadStream();}
+
+function renderMedia(media){
+  const sec=document.getElementById('mediaSection');const list=document.getElementById('mediaList');
+  if(!sec||!list)return;
+  if(!media.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  list.innerHTML=media.map(m=>{
+    const ytId=getYTId(m.url);
+    const embedUrl=ytId?`https://www.youtube.com/embed/${ytId}`:m.url;
+    return `<div class="video-card"><iframe class="yt-embed" src="${embedUrl}" allow="accelerometer; autoplay; encrypted-media" allowfullscreen></iframe><div class="video-card-info"><div><div class="video-card-title">${m.title||'Video'}</div>${m.description?`<div style="font-size:.75rem;color:var(--grey)">${m.description}</div>`:''}</div><button onclick="deleteMedia('${m.id}')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:1rem">✕</button></div></div>`;
+  }).join('');
+}
+async function deleteMedia(id){await api('DELETE',`rooms/${currentRoom}/media/${id}`);await loadStream();}
+
+function getYTId(url){const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
+
+function renderGrades(hws){
+  const el=document.getElementById('gradesContent');if(!el)return;
+  const forms=hws.filter(h=>h.type==='form'&&Object.keys(h.submissions||{}).length>0);
+  if(!forms.length){el.innerHTML='<div class="alert alert-info">Grades appear when students submit AI homework forms.</div>';return;}
+  el.innerHTML=forms.map(h=>`<div class="card" style="margin-bottom:14px"><div class="card-head"><span class="card-title">📋 ${h.title}</span><span style="background:#e6f4ea;color:var(--green);font-size:.72rem;padding:2px 8px;border-radius:12px;font-weight:700">${Object.keys(h.submissions).length} submitted</span></div><div class="card-body"><table class="sub-table"><thead><tr><th>Student</th><th>Score</th><th>Date</th></tr></thead><tbody>${Object.entries(h.submissions||{}).map(([name,sub])=>{const total=h.questions?h.questions.length:1;const pct=Math.round((sub.score||0)/total*100);return`<tr><td>${name}</td><td><span class="score-pill" style="background:${pct>=70?'#e6f4ea':pct>=40?'#fef7e0':'#fce8e6'};color:${pct>=70?'var(--green)':pct>=40?'var(--orange)':'var(--red)'}">${sub.score||0}/${total} (${pct}%)</span></td><td>${new Date((sub.time||0)*1000).toLocaleDateString()}</td></tr>`;}).join('')}</tbody></table></div></div>`).join('');
+}
+function viewSubmissions(hwId){goTab(document.querySelector('[data-tab="grades"]'));renderGrades(roomData.homework||[]);}
+
+let chatHashT='';
+function renderChat(msgs){
+  const el=document.getElementById('chatBox');if(!el)return;
+  const h=msgs.map(m=>m.time+''+m.text).join('');if(h===chatHashT)return;chatHashT=h;
+  const wb=el.scrollHeight-el.scrollTop<=el.clientHeight+20;
+  el.innerHTML=msgs.slice(-40).map(m=>`<div class="cm ${m.role==='teacher'?'me':'them'}"><div class="sn">${m.role==='teacher'?'You (Teacher)':'👦 '+m.name}</div>${m.text}</div>`).join('');
+  if(wb)el.scrollTop=el.scrollHeight;
+}
+
+// ═══ TABS ═══════════════════════════════════════════
+function goTab(el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  if(typeof el==='string')el=document.querySelector(`[data-tab="${el}"]`);
+  el.classList.add('on');
+  document.getElementById('page-'+el.dataset.tab).classList.add('on');
+}
+
+// ═══ ACTIONS ════════════════════════════════════════
+async function sendAnn(){const t=document.getElementById('annText').value.trim();if(!t)return;await api('PATCH',`rooms/${currentRoom}`,{announcement:t});alert('✅ Sent!');}
+async function clearAnn(){await api('PATCH',`rooms/${currentRoom}`,{announcement:null});document.getElementById('annText').value='';}
+async function sendDisco(){await api('POST',`rooms/${currentRoom}/disco`);alert('🪩 Disco launched!');}
+async function sendChat(pre){const inp=document.getElementById('chatIn');const txt=pre||(inp?inp.value.trim():'');if(!txt)return;await api('POST',`rooms/${currentRoom}/chat`,{name:'Teacher',text:txt,role:'teacher'});if(inp&&!pre)inp.value='';await loadStream();}
+async function clearChat(){if(confirm('Clear chat?'))await api('PATCH',`rooms/${currentRoom}`,{chat:[]});}
+async function clearStudents(){if(confirm('Clear students?'))await api('PATCH',`rooms/${currentRoom}`,{students:{}});}
+function copyLink(){const l=`${location.origin}/student?room=${currentRoom}`;navigator.clipboard.writeText(l).then(()=>alert('✅ Link copied!\n\n'+l)).catch(()=>prompt('Copy:',l));}
+function openQR(){document.getElementById('qrOv').classList.add('open');}
+
+// ═══ CUSTOMISE ══════════════════════════════════════
+let custColorVal='#1a73e8';
+function openCustomise(){if(!roomData)return;document.getElementById('custName').value=roomData.name||'';document.getElementById('custModal').classList.add('open');}
+function pickCustColor(el){document.querySelectorAll('#custColorPicker .cpick').forEach(e=>e.classList.remove('on'));el.classList.add('on');custColorVal=el.dataset.c;}
+async function saveCustomise(){const n=document.getElementById('custName').value.trim();await api('PATCH',`rooms/${currentRoom}`,{name:n,color:custColorVal});document.getElementById('custModal').classList.remove('open');await loadStream();await loadRoomList();}
+
+// ═══ MANUAL FORM ════════════════════════════════════
+function openManualForm(){document.getElementById('manualModal').classList.add('open');}
+function pickYr(el){document.querySelectorAll('.chip[data-yr]').forEach(c=>c.classList.remove('on'));el.classList.add('on');selYr=el.dataset.yr;}
+async function publishManual(){
+  const title=document.getElementById('mTitle').value.trim();const instr=document.getElementById('mInstr').value.trim();
+  if(!title||!instr){alert('Fill in title and instructions.');return;}
+  await api('POST',`rooms/${currentRoom}/homework`,{title,subject:document.getElementById('mSubject').value,year:selYr,due:document.getElementById('mDue').value,instructions:instr,type:'manual'});
+  document.getElementById('manualModal').classList.remove('open');['mTitle','mInstr','mDue'].forEach(id=>document.getElementById(id).value='');
+  await loadStream();goTab(document.querySelector('[data-tab="classwork"]'));
+}
+
+// ═══ AI FORM ════════════════════════════════════════
+function openAIForm(){document.getElementById('aiModal').classList.add('open');resetAIModal();}
+function resetAIModal(){document.getElementById('aiPrompt').value='';document.getElementById('formPreview').style.display='none';document.getElementById('formPreview').innerHTML='';document.getElementById('aiLoading').style.display='none';document.getElementById('aiGenBtn').style.display='inline-flex';document.getElementById('aiPubBtn').style.display='none';pendingAIForm=null;}
+
+async function generateAIForm(){
+  const prompt=document.getElementById('aiPrompt').value.trim();if(!prompt){alert('Please describe the homework.');return;}
+  const theme=document.getElementById('aiTheme').value;
+  const subject=document.getElementById('aiSubject').value;
+  document.getElementById('aiLoading').style.display='block';document.getElementById('aiGenBtn').style.display='none';document.getElementById('formPreview').style.display='none';
+  const sysPrompt=`You are an educational AI creating fun styled homework forms for primary school children (Year 1-2, ages 5-7).
+Generate a JSON form with the following structure:
+{
+  "title": "fun title with emoji",
+  "description": "friendly encouraging intro",
+  "questions": [
+    {"id":"q1","type":"mc","text":"question?","options":["A","B","C","D"],"correct":"A","emoji":"🔢"}
+  ]
+}
+Rules: max 6 questions, simple language, always include emoji in title and questions, make it fun and encouraging, subject: ${subject}.
+Return ONLY valid JSON, nothing else.`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:sysPrompt,messages:[{role:'user',content:prompt}]})});
+    const data=await r.json();
+    const raw=data.content&&data.content[0]?data.content[0].text:'';
+    const jsonMatch=raw.match(/\{[\s\S]*\}/);if(!jsonMatch)throw new Error('No JSON found');
+    const form=JSON.parse(jsonMatch[0]);
+    pendingAIForm={...form,subject,year:selYr,due:document.getElementById('aiDue').value,type:'form',theme};
+    showFormPreview(pendingAIForm,theme);
+  }catch(e){document.getElementById('aiLoading').style.display='none';document.getElementById('aiGenBtn').style.display='inline-flex';alert('Error: '+e.message);}
+}
+
+const THEME_COLORS={blue:'#1a73e8',green:'#0f9d58',purple:'#7b1fa2',orange:'#e37400',red:'#d93025'};
+function showFormPreview(form,theme){
+  document.getElementById('aiLoading').style.display='none';document.getElementById('aiPubBtn').style.display='inline-flex';
+  const col=THEME_COLORS[theme]||'#1a73e8';const fp=document.getElementById('formPreview');fp.style.display='block';
+  fp.innerHTML=`<div style="border-radius:12px;border:2px solid ${col};overflow:hidden">
+    <div style="background:${col};padding:16px;color:#fff">
+      <div style="font-size:1.1rem;font-weight:700">${form.title}</div>
+      <div style="font-size:.84rem;opacity:.88;margin-top:3px">${form.description||''}</div>
+    </div>
+    <div style="padding:12px;background:${col}08">
+    ${(form.questions||[]).map((q,i)=>`
+    <div style="background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)">
+      <div style="font-size:.875rem;font-weight:500;margin-bottom:8px">${q.emoji||''} ${i+1}. ${q.text}</div>
+      ${q.options?q.options.map(o=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;font-size:.84rem;margin-bottom:3px;background:${o===q.correct?'#e6f4ea':'#f8f9ff'};color:${o===q.correct?'#137333':'var(--grey)'}"><span>${o===q.correct?'✅':'○'}</span>${o}</div>`).join(''):''}</div>
+    `).join('')}
+    <div style="font-size:.75rem;color:var(--grey);margin-top:6px">✅ Correct answers shown above (students will NOT see them)</div>
+    </div>
+  </div>`;
+}
+
+async function publishAIForm(){
+  if(!pendingAIForm)return;
+  await api('POST',`rooms/${currentRoom}/homework`,pendingAIForm);
+  document.getElementById('aiModal').classList.remove('open');resetAIModal();
+  await loadStream();goTab(document.querySelector('[data-tab="classwork"]'));
+}
+
+// ═══ VIDEO SHARING ═══════════════════════════════════
+function openVideoShare(){document.getElementById('videoModal').classList.add('open');}
+function previewVideo(){
+  const url=document.getElementById('vidUrl').value.trim();if(!url)return;
+  const ytId=getYTId(url);
+  const embedUrl=ytId?`https://www.youtube.com/embed/${ytId}`:url;
+  const pv=document.getElementById('vidPreview');pv.style.display='block';
+  pv.innerHTML=`<iframe style="width:100%;height:100%;border:none" src="${embedUrl}" allow="accelerometer;autoplay;encrypted-media" allowfullscreen></iframe>`;
+}
+async function shareVideo(){
+  const url=document.getElementById('vidUrl').value.trim();if(!url){alert('Please enter a URL');return;}
+  const title=document.getElementById('vidTitle').value.trim()||'Video';
+  const desc=document.getElementById('vidDesc').value.trim();
+  await api('POST',`rooms/${currentRoom}/media`,{url,title,description:desc,type:'video'});
+  document.getElementById('videoModal').classList.remove('open');
+  ['vidUrl','vidTitle','vidDesc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('vidPreview').style.display='none';
+  await loadStream();goTab(document.querySelector('[data-tab="classwork"]'));
+  alert('✅ Video shared with students!');
+}
+
+// ═══ LIVE EVENTS ════════════════════════════════════
+async function endEvent(){
+  if(!activeEventId)return;
+  await api('POST',`rooms/${currentRoom}/events/${activeEventId}/end`);
+  activeEventId=null;await loadStream();
+}
+
+function launchQuizBattle(){document.getElementById('quizBattleModal').classList.add('open');}
+async function sendQuizBattle(){
+  const q=document.getElementById('qbQuestion').value.trim();
+  const opts={A:document.getElementById('qbA').value.trim(),B:document.getElementById('qbB').value.trim(),C:document.getElementById('qbC').value.trim(),D:document.getElementById('qbD').value.trim()};
+  const correct=document.getElementById('qbCorrect').value;
+  if(!q||!opts.A||!correct){alert('Fill in question, all options, and correct answer.');return;}
+  const correctText=opts[correct];
+  await api('POST',`rooms/${currentRoom}/events`,{type:'quiz_battle',title:'⚡ Quiz Battle!',data:{question:q,options:opts,correct:correctText,correctKey:correct}});
+  document.getElementById('quizBattleModal').classList.remove('open');
+  ['qbQuestion','qbA','qbB','qbC','qbD'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('qbCorrect').value='';
+  goTab(document.querySelector('[data-tab="events"]'));
+  alert('⚡ Quiz Battle launched! Students are answering now!');
+}
+
+function launchStarSprint(){
+  api('POST',`rooms/${currentRoom}/events`,{type:'star_sprint',title:'⭐ Star Sprint!',data:{duration:60,message:'Answer as many questions as you can! Each correct answer = stars!'}});
+  goTab(document.querySelector('[data-tab="events"]'));
+  alert('⭐ Star Sprint launched! Students earn stars for every correct answer!');
+}
+
+function launchRickroll(){
+  api('POST',`rooms/${currentRoom}/events`,{type:'rickroll',title:'🎵 You got Rickrolled!',data:{url:'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1'}});
+  goTab(document.querySelector('[data-tab="events"]'));
+  alert('🎵 Rickrolled! Check the student screens 😂');
+}
+
+function launchFootball(){document.getElementById('footballModal').classList.add('open');}
+async function sendFootball(){
+  const teamA=document.getElementById('ftA').value.trim();const teamB=document.getElementById('ftB').value.trim();
+  if(!teamA||!teamB){alert('Enter both team names.');return;}
+  await api('POST',`rooms/${currentRoom}/events`,{type:'football',title:`⚽ Predict: ${teamA} vs ${teamB}`,data:{teamA,teamB,options:{A:`${teamA} wins`,B:`${teamB} wins`,C:'Draw'}}});
+  document.getElementById('footballModal').classList.remove('open');
+  ['ftA','ftB'].forEach(id=>document.getElementById(id).value='');
+  goTab(document.querySelector('[data-tab="events"]'));
+  alert(`⚽ Football predictor launched! Students are predicting ${teamA} vs ${teamB}!`);
+}
+</script>
+
+<!-- FORM BUILDER MODAL -->
+<div class="modal-bg" id="formBuilderModal" style="align-items:flex-start;padding:0">
+  <div style="background:#f1f3f4;width:100%;max-width:680px;height:100vh;overflow-y:auto;display:flex;flex-direction:column;box-shadow:var(--sh2)">
+    <!-- Builder top bar -->
+    <div style="background:#fff;border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;height:56px;gap:12px;flex-shrink:0;position:sticky;top:0;z-index:10">
+      <button onclick="closeFormBuilder()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--grey)">←</button>
+      <span style="font-size:.95rem;font-weight:500">Form Builder</span>
+      <div class="theme-strip" style="margin-left:auto;margin-bottom:0">
+        <div class="theme-btn on" data-theme="blue" onclick="setFBTheme(this,'#1a73e8')" style="background:#1a73e8"></div>
+        <div class="theme-btn" data-theme="green" onclick="setFBTheme(this,'#0f9d58')" style="background:#0f9d58"></div>
+        <div class="theme-btn" data-theme="purple" onclick="setFBTheme(this,'#7b1fa2')" style="background:#7b1fa2"></div>
+        <div class="theme-btn" data-theme="orange" onclick="setFBTheme(this,'#e37400')" style="background:#e37400"></div>
+        <div class="theme-btn" data-theme="red" onclick="setFBTheme(this,'#d93025')" style="background:#d93025"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <select class="sel" id="fbSubject" style="width:120px;padding:6px 10px">
+          <option>📐 Maths</option><option>📖 Reading</option><option>🔬 Science</option>
+          <option>🇬🇧 English</option><option>🇷🇺 Russian</option><option>🎨 Art</option>
+        </select>
+        <select class="sel" id="fbYear" style="width:90px;padding:6px 10px">
+          <option value="Y1">Year 1</option><option value="Y2">Year 2</option><option value="Both">Both</option>
+        </select>
+        <input class="inp" id="fbDue" type="text" placeholder="Due date" style="width:100px;padding:6px 10px">
+        <button onclick="publishFormBuilder()" class="btn btn-blue btn-sm">✅ Publish</button>
+      </div>
+    </div>
+    <!-- Builder content -->
+    <div style="padding:16px;max-width:620px;margin:0 auto;width:100%">
+      <div class="fb-wrap" id="fbWrap">
+        <!-- Header card -->
+        <div class="fb-header">
+          <div class="fb-header-stripe" id="fbStripe"></div>
+          <div class="fb-header-body">
+            <input class="fb-title-inp" id="fbTitle" type="text" placeholder="Form Title">
+            <textarea class="fb-desc-inp" id="fbDesc" rows="2" placeholder="Form description (optional)"></textarea>
+          </div>
+        </div>
+        <!-- Questions container -->
+        <div id="fbQuestions"></div>
+        <!-- Add question bar -->
+        <div class="fb-add-q-bar">
+          <span style="font-size:.82rem;color:var(--grey);align-self:center">Add question:</span>
+          <button onclick="addFBQuestion('mc')">⚪ Multiple Choice</button>
+          <button onclick="addFBQuestion('tf')">✓ True / False</button>
+          <button onclick="addFBQuestion('sa')">✏️ Short Answer</button>
+          <button onclick="addFBQuestion('info')">ℹ️ Info / Text</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ FORM BUILDER ════════════════════════════════════
+let fbQuestions = [];
+let fbTheme = 'blue';
+let fbThemeColor = '#1a73e8';
+let fbQIdCounter = 0;
+
+function openFormBuilder() {
+  fbQuestions = [];
+  fbTheme = 'blue';
+  fbThemeColor = '#1a73e8';
+  fbQIdCounter = 0;
+  document.getElementById('fbTitle').value = '';
+  document.getElementById('fbDesc').value = '';
+  document.getElementById('fbStripe').style.background = '#1a73e8';
+  document.getElementById('fbQuestions').innerHTML = '';
+  document.getElementById('formBuilderModal').classList.add('open');
+  // Add one default MC question to start
+  addFBQuestion('mc');
+}
+
+function closeFormBuilder() {
+  document.getElementById('formBuilderModal').classList.remove('open');
+}
+
+function setFBTheme(el, color) {
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  fbTheme = el.dataset.theme;
+  fbThemeColor = color;
+  document.getElementById('fbStripe').style.background = color;
+  // Update focused question border
+  document.querySelectorAll('.fb-q-card').forEach(c => c.style.borderLeftColor = color);
+}
+
+function addFBQuestion(type) {
+  const id = 'q_' + (++fbQIdCounter);
+  const q = { id, type, text: '', options: type === 'mc' ? ['Option 1', 'Option 2', 'Option 3'] : type === 'tf' ? ['True', 'False'] : [], correct: null, required: true };
+  fbQuestions.push(q);
+  renderFBQuestion(q);
+}
+
+function renderFBQuestion(q) {
+  const container = document.getElementById('fbQuestions');
+  const existing = document.getElementById('fbq_' + q.id);
+  if (existing) existing.remove();
+
+  const div = document.createElement('div');
+  div.className = 'fb-q-card';
+  div.id = 'fbq_' + q.id;
+  div.style.borderLeftColor = fbThemeColor;
+
+  const qIndex = fbQuestions.indexOf(q) + 1;
+
+  let optionsHTML = '';
+  if (q.type === 'mc' || q.type === 'tf') {
+    optionsHTML = q.options.map((opt, i) => `
+      <div class="fb-option" id="fbopt_${q.id}_${i}">
+        <div class="fb-radio ${q.correct===opt?'checked':''}" onclick="setCorrect('${q.id}','${opt.replace(/'/g,"\\'")}',this)" title="Mark as correct answer"></div>
+        <input type="text" value="${opt}" placeholder="Option ${i+1}"
+          ${q.type==='tf'?'readonly style="color:var(--text);pointer-events:none"':''}
+          oninput="updateFBOption('${q.id}',${i},this.value)"
+          onfocus="focusFBQ('${q.id}')">
+        ${q.correct===opt ? '<span class="correct-badge">✅ Correct</span>' : ''}
+        ${q.type !== 'tf' ? `<button class="fb-del-opt" onclick="delFBOption('${q.id}',${i})">✕</button>` : ''}
+      </div>`).join('');
+    if (q.type === 'mc') {
+      optionsHTML += `<button class="fb-add-opt" onclick="addFBOption('${q.id}')">＋ Add option</button>`;
+    }
+    if (!q.correct && q.options.length) {
+      optionsHTML += `<div style="font-size:.75rem;color:var(--orange);margin-top:6px">⚠ Click a ⚪ circle to mark the correct answer</div>`;
+    }
+  } else if (q.type === 'sa') {
+    optionsHTML = `<div style="border-bottom:1px solid var(--border);padding:6px 0;color:var(--grey);font-size:.875rem">Short answer text...</div><div style="font-size:.75rem;color:var(--grey);margin-top:6px">ℹ Students type a free-text answer</div>`;
+  } else if (q.type === 'info') {
+    optionsHTML = `<textarea style="width:100%;border:1px solid var(--border);border-radius:4px;padding:8px;font-size:.875rem;resize:vertical;min-height:60px;outline:none;font-family:inherit" placeholder="Write information text, instructions, or a description..." oninput="updateFBInfo('${q.id}',this.value)" onfocus="focusFBQ('${q.id}')">${q.text||''}</textarea>`;
+  }
+
+  const typeLabel = {mc:'Multiple Choice',tf:'True / False',sa:'Short Answer',info:'Info / Text'}[q.type];
+
+  div.innerHTML = `
+    <div class="fb-q-body" onclick="focusFBQ('${q.id}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:.75rem;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.5px">Question ${qIndex}</span>
+        <select class="fb-q-type" onchange="changeFBQType('${q.id}',this.value)" onclick="event.stopPropagation()">
+          <option value="mc" ${q.type==='mc'?'selected':''}>⚪ Multiple Choice</option>
+          <option value="tf" ${q.type==='tf'?'selected':''}>✓ True / False</option>
+          <option value="sa" ${q.type==='sa'?'selected':''}>✏️ Short Answer</option>
+          <option value="info" ${q.type==='info'?'selected':''}>ℹ️ Info / Text</option>
+        </select>
+        <div style="display:flex;align-items:center;gap:4px;margin-left:auto">
+          <button onclick="event.stopPropagation();moveFBQ('${q.id}',-1)" style="background:none;border:1px solid var(--border);border-radius:4px;padding:3px 8px;cursor:pointer;font-size:.85rem" title="Move up">↑</button>
+          <button onclick="event.stopPropagation();moveFBQ('${q.id}',1)" style="background:none;border:1px solid var(--border);border-radius:4px;padding:3px 8px;cursor:pointer;font-size:.85rem" title="Move down">↓</button>
+        </div>
+      </div>
+      ${q.type !== 'info' ? `<input class="fb-q-text" type="text" placeholder="Question ${qIndex}" value="${(q.text||'').replace(/"/g,'&quot;')}" oninput="updateFBQText('${q.id}',this.value)" onfocus="focusFBQ('${q.id}')">` : ''}
+      ${optionsHTML}
+    </div>
+    <div class="fb-q-footer">
+      <span style="font-size:.75rem;color:var(--grey)">${typeLabel}</span>
+      <label style="display:flex;align-items:center;gap:5px;font-size:.75rem;color:var(--grey);cursor:pointer" onclick="event.stopPropagation()">
+        <input type="checkbox" ${q.required?'checked':''} onchange="fbQuestions.find(x=>x.id==='${q.id}').required=this.checked"> Required
+      </label>
+      <button class="fb-del-q" onclick="event.stopPropagation();delFBQ('${q.id}')" title="Delete question">🗑️</button>
+    </div>`;
+
+  container.appendChild(div);
+}
+
+function focusFBQ(id) {
+  document.querySelectorAll('.fb-q-card').forEach(c => c.classList.remove('focused'));
+  const el = document.getElementById('fbq_' + id);
+  if (el) el.classList.add('focused');
+}
+
+function updateFBQText(id, val) {
+  const q = fbQuestions.find(x => x.id === id);
+  if (q) q.text = val;
+}
+
+function updateFBInfo(id, val) {
+  const q = fbQuestions.find(x => x.id === id);
+  if (q) q.text = val;
+}
+
+function updateFBOption(id, idx, val) {
+  const q = fbQuestions.find(x => x.id === id);
+  if (!q) return;
+  const wasCorrect = q.correct === q.options[idx];
+  q.options[idx] = val;
+  if (wasCorrect) { q.correct = val; rerenderFBQ(q); }
+}
+
+function setCorrect(id, opt, el) {
+  const q = fbQuestions.find(x => x.id === id);
+  if (!q) return;
+  q.correct = opt;
+  rerenderFBQ(q);
+}
+
+function addFBOption(id) {
+  const q = fbQuestions.find(x => x.id === id);
+  if (!q) return;
+  q.options.push('Option ' + (q.options.length + 1));
+  rerenderFBQ(q);
+}
+
+function delFBOption(id, idx) {
+  const q = fbQuestions.find(x => x.id === id);
+  if (!q || q.options.length <= 1) return;
+  if (q.correct === q.options[idx]) q.correct = null;
+  q.options.splice(idx, 1);
+  rerenderFBQ(q);
+}
+
+function changeFBQType(id, newType) {
+  const q = fbQuestions.find(x => x.id === id);
+  if (!q) return;
+  q.type = newType;
+  q.correct = null;
+  if (newType === 'mc') q.options = ['Option 1', 'Option 2', 'Option 3'];
+  else if (newType === 'tf') q.options = ['True', 'False'];
+  else q.options = [];
+  rerenderFBQ(q);
+}
+
+function moveFBQ(id, dir) {
+  const idx = fbQuestions.findIndex(x => x.id === id);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= fbQuestions.length) return;
+  const tmp = fbQuestions[idx]; fbQuestions[idx] = fbQuestions[newIdx]; fbQuestions[newIdx] = tmp;
+  reRenderAllFBQs();
+}
+
+function delFBQ(id) {
+  fbQuestions = fbQuestions.filter(x => x.id !== id);
+  const el = document.getElementById('fbq_' + id);
+  if (el) el.remove();
+  reRenderAllFBQs();
+}
+
+function rerenderFBQ(q) {
+  renderFBQuestion(q);
+  // Put it back in right position
+  const container = document.getElementById('fbQuestions');
+  const el = document.getElementById('fbq_' + q.id);
+  const idx = fbQuestions.indexOf(q);
+  const children = Array.from(container.children);
+  if (children[idx] !== el) container.insertBefore(el, children[idx] || null);
+}
+
+function reRenderAllFBQs() {
+  const container = document.getElementById('fbQuestions');
+  container.innerHTML = '';
+  fbQuestions.forEach(q => renderFBQuestion(q));
+}
+
+async function publishFormBuilder() {
+  const title = document.getElementById('fbTitle').value.trim();
+  if (!title) { alert('Please add a form title!'); document.getElementById('fbTitle').focus(); return; }
+  if (fbQuestions.filter(q=>q.type!=='info').length === 0) { alert('Please add at least one question!'); return; }
+
+  const qs = fbQuestions.map(q => ({
+    id: q.id, type: q.type === 'tf' ? 'mc' : q.type,
+    text: q.text, options: q.options, correct: q.correct, emoji: '', required: q.required
+  })).filter(q => q.type === 'info' || q.text);
+
+  const hw = {
+    title, description: document.getElementById('fbDesc').value.trim(),
+    subject: document.getElementById('fbSubject').value,
+    year: document.getElementById('fbYear').value,
+    due: document.getElementById('fbDue').value,
+    type: 'form', theme: fbTheme, questions: qs, instructions: ''
+  };
+
+  const res = await api('POST', `rooms/${currentRoom}/homework`, hw);
+  if (!res.ok) { alert('Error publishing: ' + (res.error||'Unknown')); return; }
+
+  closeFormBuilder();
+  await loadStream();
+  goTab(document.querySelector('[data-tab="classwork"]'));
+  alert('✅ Form published to students!');
+}
+</script>
+
+</body>
+</html>
